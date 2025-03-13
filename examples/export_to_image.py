@@ -57,7 +57,7 @@ def main():
     diagram = client.add_node(
         diagram, 
         "End Failure", 
-        -40, 
+        20, 
         420, 
         120, 
         40,

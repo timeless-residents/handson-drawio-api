@@ -478,9 +478,20 @@ Use the SVG format instead, which can be generated directly:
         
         # Add some padding
         padding = 50
-        min_x = max(0, min_x - padding)
-        min_y = max(0, min_y - padding)
+        min_x = min_x - padding  # Allow negative coordinates
+        min_y = min_y - padding
         max_x = max_x + padding
         max_y = max_y + padding
+        
+        # Ensure we have a reasonable minimum viewing area
+        if max_x - min_x < 500:
+            center_x = (max_x + min_x) / 2
+            min_x = center_x - 250
+            max_x = center_x + 250
+            
+        if max_y - min_y < 500:
+            center_y = (max_y + min_y) / 2
+            min_y = center_y - 250
+            max_y = center_y + 250
         
         return (min_x, min_y, max_x, max_y)
