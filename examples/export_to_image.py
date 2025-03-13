@@ -110,6 +110,40 @@ def main():
     print("✓ The SVG file was created successfully.")
     print("  You can open it in any web browser or SVG editor.")
     
+    # Create a simple HTML file to display the SVG
+    with open("flowchart_viewer.html", "w") as f:
+        f.write(f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Flowchart Viewer</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 20px; }}
+        h1 {{ color: #333; }}
+        .svg-container {{ 
+            border: 1px solid #ddd; 
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 20px;
+            max-width: 800px;
+            overflow: auto;
+        }}
+        svg {{ max-width: 100%; height: auto; }}
+    </style>
+</head>
+<body>
+    <h1>{diagram["title"]}</h1>
+    <div class="svg-container">
+        <object data="{output_path}" type="image/svg+xml" width="100%">
+            Your browser does not support SVG
+        </object>
+    </div>
+    <p><i>This diagram was generated programmatically using the Draw.io API.</i></p>
+</body>
+</html>""")
+    
+    print(f"✓ Created HTML viewer: flowchart_viewer.html")
+    
     # Create helper HTML files for other formats
     print("\nCreating HTML helper files for other formats:")
     
@@ -126,8 +160,9 @@ def main():
     print("✓ Created custom SVG file")
     
     print("\nUsage Instructions:")
-    print("1. SVG files can be opened directly in any browser")
-    print("2. For PNG/JPG, open the .html file in a browser and use save-as")
+    print("1. Open flowchart_viewer.html to view the SVG diagram")
+    print("2. SVG files can also be opened directly in any browser")
+    print("3. For PNG/JPG, open the .html file in a browser and use save-as")
     print("   Example: open flowchart.png.html in your browser")
 
 
