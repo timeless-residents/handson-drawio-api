@@ -369,20 +369,22 @@ Use the SVG format instead, which can be generated directly:
                     ellipse_rx = w / 2
                     ellipse_ry = cylinder_height / 2
                     
-                    # Use SVG ordering for proper z-index (items drawn later appear on top)
+                    # Create a simpler but more reliable cylinder representation
                     svg_content += f'<g class="database-cylinder">\n'
                     
-                    # 1. Start with the rectangle body
+                    # Body of the cylinder
                     svg_content += f'  <rect x="{x}" y="{y + ellipse_ry}" width="{w}" height="{h - 2*ellipse_ry}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
                     
-                    # 2. Add the bottom ellipse (full ellipse, not just the arc)
-                    svg_content += f'  <ellipse cx="{x + ellipse_rx}" cy="{y + h - ellipse_ry}" rx="{ellipse_rx}" ry="{ellipse_ry}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
-                    
-                    # 3. Draw the top part of the bottom ellipse - white fill to hide the part that should be hidden by the cylinder
-                    svg_content += f'  <path d="M {x} {y + h - ellipse_ry} L {x + w} {y + h - ellipse_ry}" stroke="{stroke_color}" stroke-width="1"/>\n'
-                    
-                    # 4. Finally draw the top ellipse, which appears on top of everything
+                    # Top ellipse (cap) of cylinder
                     svg_content += f'  <ellipse cx="{x + ellipse_rx}" cy="{y + ellipse_ry}" rx="{ellipse_rx}" ry="{ellipse_ry}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
+                    
+                    # Bottom visible part - just the visible arc, no complete ellipse
+                    # This is the front-facing half of the bottom ellipse
+                    svg_content += f'  <path d="M {x} {y + h - ellipse_ry} Q {x + w/2} {y + h + ellipse_ry}, {x + w} {y + h - ellipse_ry}" fill="none" stroke="{stroke_color}" stroke-width="1"/>\n'
+                    
+                    # Sides of the cylinder - vertical lines connecting ellipses
+                    svg_content += f'  <line x1="{x}" y1="{y + ellipse_ry}" x2="{x}" y2="{y + h - ellipse_ry}" stroke="{stroke_color}" stroke-width="1"/>\n'
+                    svg_content += f'  <line x1="{x + w}" y1="{y + ellipse_ry}" x2="{x + w}" y2="{y + h - ellipse_ry}" stroke="{stroke_color}" stroke-width="1"/>\n'
                     
                     # Close the group
                     svg_content += f'</g>\n'
