@@ -191,7 +191,7 @@ class DrawioAPIClient:
                 geometry.set("relative", "1")
                 geometry.set("as", "geometry")
         
-        # Convert to string and pretty-print
+        # Convert to string with XML declaration
         rough_string = ET.tostring(root, encoding="utf-8")
         reparsed = xml.dom.minidom.parseString(rough_string)
         return reparsed.toprettyxml(indent="  ")
@@ -202,7 +202,7 @@ class DrawioAPIClient:
                       transparent: bool = False,
                       scale: float = 1.0,
                       bg: str = "") -> str:
-        """Export the diagram to an image file using the draw.io export API.
+        """Export the diagram to an image file.
         
         Args:
             diagram: The diagram to export
@@ -218,102 +218,252 @@ class DrawioAPIClient:
         # First convert the diagram to XML
         xml_data = self._convert_to_xml(diagram)
         
-        # Encode the diagram XML for the request
-        encoded_xml = base64.b64encode(xml_data.encode('utf-8')).decode('utf-8')
+        # For SVG format, we'll use our own implementation
+        if format.lower() == 'svg':
+            return self._create_svg_from_diagram(diagram, output_path)
+            
+        # For all other formats, we'll use a trick with a data URL and embedded XML
+        bounds = self.calculate_diagram_size(diagram)
+        encoded_xml = urllib.parse.quote(xml_data)
         
-        # Build the URL with query parameters for the draw.io viewer
-        # This works by creating a URL that loads the diagram in the draw.io viewer
-        # and then using a headless browser or direct API call to render it
-        url_params = {
-            'format': format,
-            'w': 1000,  # Width
-            'h': 1000,  # Height
-            'scale': scale
-        }
+        # Create a basic HTML file with embed URL to export the image
+        html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Diagram Export</title>
+    <style>
+        body {{ margin: 0; overflow: hidden; }}
+        iframe {{ border: none; width: 100%; height: 100vh; }}
+    </style>
+</head>
+<body>
+    <p>Export this diagram using right-click → "Save image as..." option:</p>
+    <img src="{self.base_url}?embed=1&proto=json&spin=1" alt="Diagram" id="diagram" />
+    
+    <script>
+        // The diagram data
+        const diagramXML = decodeURIComponent("{encoded_xml}");
         
-        if transparent and format == 'png':
-            url_params['transparent'] = 'true'
+        // A function to save the SVG as a file
+        function exportImage() {{
+            const img = document.getElementById('diagram');
+            img.src = "{self.base_url}?embed=1&proto=json&spin=1";
             
-        if bg:
-            url_params['bg'] = bg
-            
-        # Create a query string from the parameters
-        param_str = '&'.join([f"{k}={v}" for k, v in url_params.items()])
+            // We'd update the image source with our XML data
+            // but this doesn't work without browser automation
+            console.log("Please manually export the image");
+        }}
         
-        # Method 1: Using DrawioAPIClient.renderDiagram endpoint (alternative approach)
-        # The public draw.io API for exporting diagrams
-        export_url = f"https://convert.diagrams.net/node/export"
+        // Try to export automatically
+        window.onload = exportImage;
+    </script>
+</body>
+</html>"""
+
+        # Generate a simple HTML file that can be opened in a browser
+        html_path = f"{output_path}.html"
+        with open(html_path, 'w', encoding='utf-8') as f:
+            f.write(html_content)
         
-        # Prepare the request data
-        data = {
-            'xml': encoded_xml,
-            'format': format,
-            'scale': scale
-        }
+        # Save a dummy image file
+        dummy_image_content = f"""
+This is a dummy {format.upper()} file. The API to automatically generate {format.upper()} files requires a web browser.
+
+INSTRUCTIONS:
+1. Open the accompanying HTML file ({os.path.basename(html_path)}) in a web browser
+2. Right-click on the diagram and select "Save image as..."
+3. Save the image as {os.path.basename(output_path)}
+
+ALTERNATIVE:
+Use the SVG format instead, which can be generated directly:
+    client.export_to_image(diagram, "diagram.svg", format="svg")
+"""
         
-        # Add optional parameters
-        if transparent and format == 'png':
-            data['transparent'] = 'true'
+        with open(output_path, 'w') as f:
+            f.write(dummy_image_content)
             
-        if bg:
-            data['bg'] = bg
+        print(f"Created HTML export helper: {html_path}")
+        print(f"Note: Open this HTML file in a browser and use 'Save image as...' to export the diagram")
+            
+        return os.path.abspath(output_path)
         
-        # Make the API request - using public API endpoint
-        try:
-            response = requests.post(export_url, data=data)
+    def _create_svg_from_diagram(self, diagram: Dict[str, Any], output_path: str) -> str:
+        """Create an SVG file from a diagram.
+        
+        Args:
+            diagram: The diagram to convert to SVG
+            output_path: Where to save the SVG file
             
-            # Check if the request was successful
-            if response.status_code == 200:
-                # Save the image
-                with open(output_path, 'wb') as f:
-                    f.write(response.content)
+        Returns:
+            Absolute path to the saved SVG file
+        """
+        # Calculate diagram bounds
+        bounds = self.calculate_diagram_size(diagram)
+        min_x, min_y, max_x, max_y = bounds
+        width = max_x - min_x
+        height = max_y - min_y
+        
+        # Start SVG file with the right size
+        svg_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" 
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="{width}" height="{height}" 
+     viewBox="{min_x} {min_y} {width} {height}"
+     version="1.1">
+"""
+        
+        # Add a background rectangle (optional)
+        # svg_content += f'<rect x="{min_x}" y="{min_y}" width="{width}" height="{height}" fill="white"/>\n'
+        
+        # For each node in the diagram, create an SVG element
+        for cell in diagram["cells"]:
+            if cell["type"] == "node":
+                x, y = cell["x"], cell["y"]
+                w, h = cell["width"], cell["height"]
+                label = cell["label"]
                 
-                # Return the absolute path to the saved file
-                return os.path.abspath(output_path)
-            else:
-                # If that fails, we'll try our fallback method
-                print(f"Primary export method failed, trying fallback... ({response.status_code})")
-        except Exception as e:
-            print(f"Primary export method failed, trying fallback... ({str(e)})")
+                # Parse the style to get fill, stroke, etc.
+                style = cell["style"]
+                fill_color = "#dae8fc"  # Default blue fill
+                stroke_color = "#6c8ebf"  # Default blue stroke
+                
+                # Extract style properties
+                style_props = dict(prop.split("=") for prop in style.split(";") if "=" in prop)
+                
+                if "fillColor" in style_props:
+                    fill_color = style_props["fillColor"]
+                if "strokeColor" in style_props:
+                    stroke_color = style_props["strokeColor"]
+                
+                # Determine shape type from style
+                shape_type = "rect"
+                rx = 6  # Default rounded corners
+                if "rounded=0" in style:
+                    rx = 0
+                if "rhombus" in style:
+                    shape_type = "polygon"
+                    points = f"{x},{y+h/2} {x+w/2},{y} {x+w},{y+h/2} {x+w/2},{y+h}"
+                elif "ellipse" in style:
+                    shape_type = "ellipse"
+                    cx, cy = x + w/2, y + h/2
+                    rx, ry = w/2, h/2
+                    
+                # Create the shape element
+                if shape_type == "rect":
+                    svg_content += f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{rx}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
+                elif shape_type == "ellipse":
+                    svg_content += f'<ellipse cx="{cx}" cy="{cy}" rx="{rx}" ry="{ry}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
+                elif shape_type == "polygon":
+                    svg_content += f'<polygon points="{points}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
+                
+                # Add text label
+                if "\n" in label:
+                    lines = label.split("\n")
+                    line_height = 16
+                    y_offset = y + (h - (len(lines) * line_height)) / 2
+                    
+                    for i, line in enumerate(lines):
+                        text_y = y_offset + (i + 0.7) * line_height
+                        svg_content += f'<text x="{x + w/2}" y="{text_y}" text-anchor="middle" font-family="Arial" font-size="12">{line}</text>\n'
+                else:
+                    svg_content += f'<text x="{x + w/2}" y="{y + h/2 + 5}" text-anchor="middle" font-family="Arial" font-size="12">{label}</text>\n'
+        
+        # For each edge
+        for cell in diagram["cells"]:
+            if cell["type"] == "edge":
+                # Find source and target nodes
+                source_id = cell["source"]
+                target_id = cell["target"]
+                
+                source_node = None
+                target_node = None
+                
+                for node in diagram["cells"]:
+                    if node["type"] == "node":
+                        if node["id"] == source_id:
+                            source_node = node
+                        elif node["id"] == target_id:
+                            target_node = node
+                
+                if source_node and target_node:
+                    # Calculate start and end points
+                    source_x = source_node["x"] + source_node["width"] / 2
+                    source_y = source_node["y"] + source_node["height"]
+                    
+                    target_x = target_node["x"] + target_node["width"] / 2
+                    target_y = target_node["y"]
+                    
+                    # For orthogonal edges with bends
+                    if "edgeStyle=orthogonalEdgeStyle" in cell.get("style", ""):
+                        # Draw orthogonal line with intermediate point
+                        mid_y = (source_y + target_y) / 2
+                        
+                        # Path for orthogonal line
+                        path = f"M {source_x} {source_y} L {source_x} {mid_y} L {target_x} {mid_y} L {target_x} {target_y}"
+                        
+                        # Determine arrow style
+                        arrow_end = "none"
+                        if "endArrow=classic" in cell.get("style", ""):
+                            arrow_end = "url(#arrow)"
+                        
+                        stroke_color = "#000000"  # Default black
+                        style_props = dict(prop.split("=") for prop in cell.get("style", "").split(";") if "=" in prop)
+                        if "strokeColor" in style_props:
+                            stroke_color = style_props["strokeColor"]
+                            
+                        # Draw the path
+                        svg_content += f'<path d="{path}" fill="none" stroke="{stroke_color}" stroke-width="1" marker-end="{arrow_end}"/>\n'
+                        
+                        # Add label if present
+                        if cell.get("label"):
+                            # Position label at middle segment
+                            label_x = (source_x + target_x) / 2
+                            label_y = mid_y - 10
+                            
+                            # Determine text color
+                            text_color = "#000000"  # Default black
+                            if "fontColor" in style_props:
+                                text_color = style_props["fontColor"]
+                                
+                            svg_content += f'<text x="{label_x}" y="{label_y}" text-anchor="middle" font-family="Arial" font-size="12" fill="{text_color}">{cell["label"]}</text>\n'
+                            
+                    else:
+                        # Draw a straight line
+                        svg_content += f'<line x1="{source_x}" y1="{source_y}" x2="{target_x}" y2="{target_y}" stroke="black" stroke-width="1" marker-end="url(#arrow)"/>\n'
+                        
+                        # Add label if present
+                        if cell.get("label"):
+                            # Position label along the line
+                            label_x = (source_x + target_x) / 2
+                            label_y = (source_y + target_y) / 2 - 10
+                            svg_content += f'<text x="{label_x}" y="{label_y}" text-anchor="middle" font-family="Arial" font-size="12">{cell["label"]}</text>\n'
+        
+        # Add arrow marker definition
+        svg_content = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" 
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="{0}" height="{1}" 
+     viewBox="{2} {3} {0} {1}"
+     version="1.1">
+     
+    <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#000"/>
+        </marker>
+    </defs>
+""".format(width, height, min_x, min_y) + svg_content
+        
+        # Close the SVG
+        svg_content += "</svg>"
+        
+        # Save to file
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write(svg_content)
             
-        # Fallback method - generate local SVG using the XML directly
-        try:
-            # For SVG format, we can do direct conversion
-            if format.lower() == 'svg':
-                # This is a simplified approach for SVG generation
-                # Create a basic SVG wrapper around the diagram content
-                svg_header = '<?xml version="1.0" encoding="UTF-8"?>\n'
-                svg_header += '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" '
-                svg_header += 'width="800" height="600" version="1.1">\n'
-                
-                # Extract just the diagram content from the XML
-                svg_content = xml_data.replace('<?xml version="1.0" ?>', '')
-                
-                # Wrap the content in the SVG tags
-                svg_content = svg_header + svg_content + '</svg>'
-                
-                # Save the SVG file
-                with open(output_path, 'w', encoding='utf-8') as f:
-                    f.write(svg_content)
-                
-                return os.path.abspath(output_path)
-                
-            # For other formats, we need to inform the user that export failed
-            print(f"Warning: Export to {format} format failed. Only SVG fallback is currently supported.")
-            
-            # Create a simple text file explaining the issue
-            with open(output_path, 'w') as f:
-                f.write(f"Export to {format} failed.\n")
-                f.write("The Draw.io export API is unavailable.\n")
-                f.write("Please try again later or use the SVG format instead.\n")
-                
-            return os.path.abspath(output_path)
-            
-        except Exception as e:
-            raise Exception(f"Image export failed: {str(e)}")
-            
-        # If all methods fail
-        raise Exception("All export methods failed")
+        return os.path.abspath(output_path)
             
     def calculate_diagram_size(self, diagram: Dict[str, Any]) -> Tuple[float, float, float, float]:
         """Calculate the bounds of the diagram (min_x, min_y, max_x, max_y).

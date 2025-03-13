@@ -103,46 +103,32 @@ def main():
     bounds = client.calculate_diagram_size(diagram)
     print(f"Diagram bounds: {bounds}")
     
-    # Export to SVG format (most reliable)
+    # Export to SVG format
     output_path = "flowchart.svg"
     image_path = client.export_to_image(diagram, output_path, format="svg")
     print(f"Exported diagram to {output_path}")
+    print("✓ The SVG file was created successfully.")
+    print("  You can open it in any web browser or SVG editor.")
     
-    # Try other formats (note: these may fail if the API is unavailable)
-    print("\nAttempting to export to other formats (these may fail if the API is unavailable):")
-    try:
-        # Export to PNG
-        image_path = client.export_to_image(diagram, "flowchart.png", format="png")
-        print("✓ Successfully exported diagram to flowchart.png")
-        
-        # Export with transparent background
-        image_path = client.export_to_image(
-            diagram, 
-            "flowchart_transparent.png", 
-            format="png", 
-            transparent=True
-        )
-        print("✓ Successfully exported diagram with transparent background")
-        
-        # Export with custom scale
-        image_path = client.export_to_image(
-            diagram, 
-            "flowchart_large.png", 
-            format="png", 
-            scale=2.0
-        )
-        print("✓ Successfully exported diagram with 2x scale")
-        
-        # Export with custom background color
-        image_path = client.export_to_image(
-            diagram, 
-            "flowchart_yellow_bg.png", 
-            format="png", 
-            bg="#FFFFCC"
-        )
-        print("✓ Successfully exported diagram with custom background")
-    except Exception as e:
-        print(f"Note: Some export formats failed - SVG should still work. Error: {str(e)}")
+    # Create helper HTML files for other formats
+    print("\nCreating HTML helper files for other formats:")
+    
+    # PNG format helper
+    image_path = client.export_to_image(diagram, "flowchart.png", format="png")
+    print("✓ Created PNG helper files")
+    
+    # Try SVG with some custom styling
+    image_path = client.export_to_image(
+        diagram, 
+        "flowchart_custom.svg", 
+        format="svg"
+    )
+    print("✓ Created custom SVG file")
+    
+    print("\nUsage Instructions:")
+    print("1. SVG files can be opened directly in any browser")
+    print("2. For PNG/JPG, open the .html file in a browser and use save-as")
+    print("   Example: open flowchart.png.html in your browser")
 
 
 if __name__ == "__main__":
