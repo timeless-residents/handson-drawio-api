@@ -5,6 +5,7 @@ import sys
 from create_simple_diagram import main as create_simple_diagram
 from export_to_image import main as export_to_image
 from create_datastore_diagram import main as create_datastore_diagram
+from export_to_drawio import main as export_to_drawio
 
 if __name__ == "__main__":
     # Check if user specified which example to run
@@ -16,9 +17,11 @@ if __name__ == "__main__":
             export_to_image()
         elif example == "datastore":
             create_datastore_diagram()
+        elif example == "drawio":
+            export_to_drawio()
         else:
             print(f"Unknown example: {example}")
-            print("Available examples: simple, image, datastore")
+            print("Available examples: simple, image, datastore, drawio")
     else:
         # Run the datastore example by default
         create_datastore_diagram()

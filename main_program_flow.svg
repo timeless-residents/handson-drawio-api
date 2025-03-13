@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" 
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="760" height="920" 
+     viewBox="250 -10 760 920">
+     
+    <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#000"/>
+        </marker>
+    </defs>
+    
+    <!-- White background -->
+    <rect x="250" y="-10" width="760" height="920" fill="white"/>
+<ellipse cx="360.0" cy="60.0" rx="60.0" ry="20.0" fill="#d5e8d4" stroke="#82b366" stroke-width="1"/>
+<text x="360.0" y="65.0" text-anchor="middle" font-family="Arial" font-size="12">Start</text>
+<rect x="300" y="120" width="180" height="60" rx="6" fill="#dae8fc" stroke="#6c8ebf" stroke-width="1"/>
+<text x="390.0" y="155.0" text-anchor="middle" font-family="Arial" font-size="12">Import modules and examples</text>
+<polygon points="300,250.0 390.0,220 480,250.0 390.0,280" fill="#fff2cc" stroke="#d6b656" stroke-width="1"/>
+<text x="390.0" y="245.2" text-anchor="middle" font-family="Arial" font-size="12">Check if command line</text>
+<text x="390.0" y="261.2" text-anchor="middle" font-family="Arial" font-size="12">arguments provided</text>
+<rect x="600" y="220" width="160" height="60" rx="6" fill="#dae8fc" stroke="#6c8ebf" stroke-width="1"/>
+<text x="680.0" y="245.2" text-anchor="middle" font-family="Arial" font-size="12">Get example name</text>
+<text x="680.0" y="261.2" text-anchor="middle" font-family="Arial" font-size="12">from sys.argv[1]</text>
+<polygon points="600,350.0 680.0,320 760,350.0 680.0,380" fill="#fff2cc" stroke="#d6b656" stroke-width="1"/>
+<text x="680.0" y="355.0" text-anchor="middle" font-family="Arial" font-size="12">example == 'simple'?</text>
+<rect x="800" y="320" width="160" height="60" rx="6" fill="#dae8fc" stroke="#6c8ebf" stroke-width="1"/>
+<text x="880.0" y="345.2" text-anchor="middle" font-family="Arial" font-size="12">Run</text>
+<text x="880.0" y="361.2" text-anchor="middle" font-family="Arial" font-size="12">create_simple_diagram()</text>
+<polygon points="600,450.0 680.0,420 760,450.0 680.0,480" fill="#fff2cc" stroke="#d6b656" stroke-width="1"/>
+<text x="680.0" y="455.0" text-anchor="middle" font-family="Arial" font-size="12">example == 'image'?</text>
+<rect x="800" y="420" width="160" height="60" rx="6" fill="#dae8fc" stroke="#6c8ebf" stroke-width="1"/>
+<text x="880.0" y="445.2" text-anchor="middle" font-family="Arial" font-size="12">Run</text>
+<text x="880.0" y="461.2" text-anchor="middle" font-family="Arial" font-size="12">export_to_image()</text>
+<polygon points="600,550.0 680.0,520 760,550.0 680.0,580" fill="#fff2cc" stroke="#d6b656" stroke-width="1"/>
+<text x="680.0" y="555.0" text-anchor="middle" font-family="Arial" font-size="12">example == 'datastore'?</text>
+<rect x="800" y="520" width="160" height="60" rx="6" fill="#dae8fc" stroke="#6c8ebf" stroke-width="1"/>
+<text x="880.0" y="545.2" text-anchor="middle" font-family="Arial" font-size="12">Run</text>
+<text x="880.0" y="561.2" text-anchor="middle" font-family="Arial" font-size="12">create_datastore_diagram()</text>
+<polygon points="600,650.0 680.0,620 760,650.0 680.0,680" fill="#fff2cc" stroke="#d6b656" stroke-width="1"/>
+<text x="680.0" y="655.0" text-anchor="middle" font-family="Arial" font-size="12">example == 'drawio'?</text>
+<rect x="800" y="620" width="160" height="60" rx="6" fill="#dae8fc" stroke="#6c8ebf" stroke-width="1"/>
+<text x="880.0" y="645.2" text-anchor="middle" font-family="Arial" font-size="12">Run</text>
+<text x="880.0" y="661.2" text-anchor="middle" font-family="Arial" font-size="12">export_to_drawio()</text>
+<rect x="600" y="720" width="160" height="60" rx="6" fill="#f8cecc" stroke="#b85450" stroke-width="1"/>
+<text x="680.0" y="745.2" text-anchor="middle" font-family="Arial" font-size="12">Print error and</text>
+<text x="680.0" y="761.2" text-anchor="middle" font-family="Arial" font-size="12">available examples</text>
+<rect x="300" y="320" width="180" height="60" rx="6" fill="#dae8fc" stroke="#6c8ebf" stroke-width="1"/>
+<text x="390.0" y="337.2" text-anchor="middle" font-family="Arial" font-size="12">Run</text>
+<text x="390.0" y="353.2" text-anchor="middle" font-family="Arial" font-size="12">create_datastore_diagram()</text>
+<text x="390.0" y="369.2" text-anchor="middle" font-family="Arial" font-size="12">(default)</text>
+<ellipse cx="510.0" cy="840.0" rx="60.0" ry="20.0" fill="#d5e8d4" stroke="#82b366" stroke-width="1"/>
+<text x="510.0" y="845.0" text-anchor="middle" font-family="Arial" font-size="12">End</text>
+<path d="M 360.0 80 L 360.0 100.0 L 390.0 100.0 L 390.0 120" fill="none" stroke="#000000" stroke-width="1" marker-end="url(#arrow)"/>
+<path d="M 390.0 180 L 390.0 200.0 L 390.0 200.0 L 390.0 220" fill="none" stroke="#000000" stroke-width="1" marker-end="url(#arrow)"/>
+<path d="M 390.0 280 L 390.0 250.0 L 680.0 250.0 L 680.0 220" fill="none" stroke="#000000" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="535.0" y="240.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#000000">Yes</text>
+<path d="M 390.0 280 L 390.0 300.0 L 390.0 300.0 L 390.0 320" fill="none" stroke="#000000" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="390.0" y="290.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#000000">No</text>
+<line x1="680.0" y1="280" x2="680.0" y2="320" stroke="black" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="680.0" y="290.0" text-anchor="middle" font-family="Arial" font-size="12">edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;</text>
+<path d="M 680.0 380 L 680.0 350.0 L 880.0 350.0 L 880.0 320" fill="none" stroke="#000000" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="780.0" y="340.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#000000">Yes</text>
+<path d="M 680.0 380 L 680.0 400.0 L 680.0 400.0 L 680.0 420" fill="none" stroke="#000000" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="680.0" y="390.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#000000">No</text>
+<path d="M 680.0 480 L 680.0 450.0 L 880.0 450.0 L 880.0 420" fill="none" stroke="#000000" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="780.0" y="440.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#000000">Yes</text>
+<path d="M 680.0 480 L 680.0 500.0 L 680.0 500.0 L 680.0 520" fill="none" stroke="#000000" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="680.0" y="490.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#000000">No</text>
+<path d="M 680.0 580 L 680.0 550.0 L 880.0 550.0 L 880.0 520" fill="none" stroke="#000000" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="780.0" y="540.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#000000">Yes</text>
+<path d="M 680.0 580 L 680.0 600.0 L 680.0 600.0 L 680.0 620" fill="none" stroke="#000000" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="680.0" y="590.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#000000">No</text>
+<path d="M 680.0 680 L 680.0 650.0 L 880.0 650.0 L 880.0 620" fill="none" stroke="#000000" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="780.0" y="640.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#000000">Yes</text>
+<path d="M 680.0 680 L 680.0 700.0 L 680.0 700.0 L 680.0 720" fill="none" stroke="#000000" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="680.0" y="690.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#000000">No</text>
+<line x1="880.0" y1="380" x2="510.0" y2="820" stroke="black" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="695.0" y="590.0" text-anchor="middle" font-family="Arial" font-size="12">edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;</text>
+<line x1="880.0" y1="480" x2="510.0" y2="820" stroke="black" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="695.0" y="640.0" text-anchor="middle" font-family="Arial" font-size="12">edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;</text>
+<line x1="880.0" y1="580" x2="510.0" y2="820" stroke="black" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="695.0" y="690.0" text-anchor="middle" font-family="Arial" font-size="12">edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;</text>
+<line x1="880.0" y1="680" x2="510.0" y2="820" stroke="black" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="695.0" y="740.0" text-anchor="middle" font-family="Arial" font-size="12">edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;</text>
+<line x1="680.0" y1="780" x2="510.0" y2="820" stroke="black" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="595.0" y="790.0" text-anchor="middle" font-family="Arial" font-size="12">edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;</text>
+<line x1="390.0" y1="380" x2="510.0" y2="820" stroke="black" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="450.0" y="590.0" text-anchor="middle" font-family="Arial" font-size="12">edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;</text>
+</svg>

@@ -3,11 +3,26 @@
 import json
 import base64
 import os
+import time
 import urllib.parse
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 import requests
+import tempfile
 from typing import Dict, Any, Optional, List, Union, Tuple
+
+# Optional imports - will be used if available
+try:
+    import cairosvg
+    CAIROSVG_AVAILABLE = True
+except ImportError:
+    CAIROSVG_AVAILABLE = False
+
+try:
+    from PIL import Image
+    PILLOW_AVAILABLE = True
+except ImportError:
+    PILLOW_AVAILABLE = False
 
 
 class DrawioAPIClient:
@@ -117,52 +132,76 @@ class DrawioAPIClient:
         
         Args:
             diagram: The diagram to export
-            format: The export format (json, xml)
+            format: The export format (json, xml, drawio)
             
         Returns:
             The exported diagram data
         """
+        # Create a copy of the diagram to avoid modifying the original
+        diagram_copy = diagram.copy()
+        
         if format.lower() == "json":
-            return json.dumps(diagram)
+            return json.dumps(diagram_copy)
         elif format.lower() == "xml":
-            return self._convert_to_xml(diagram)
+            return self._convert_to_xml(diagram_copy)
+        elif format.lower() == "drawio":
+            # Mark this diagram for drawio format
+            diagram_copy["_format"] = "drawio"
+            # .drawio format is XML wrapped in a specific way for Draw.io
+            xml_content = self._convert_to_xml(diagram_copy)
+            return self._create_drawio_file(xml_content, diagram_copy.get("title", "Diagram"))
         else:
             raise ValueError(f"Unsupported format: {format}")
     
+    def _create_drawio_file(self, xml_content: str, title: str) -> str:
+        """Create a .drawio file format from XML content.
+        
+        Args:
+            xml_content: The diagram content in XML format
+            title: The diagram title
+            
+        Returns:
+            The diagram in .drawio format
+        """
+        # Strip XML declaration as it will be included in the mxfile
+        xml_content = xml_content.replace('<?xml version="1.0" encoding="UTF-8"?>\n', '')
+        
+        # In Draw.io format, the diagram content is stored as uncompressed XML
+        # (No URL-safe Base64 encoding as originally implemented)
+        
+        # Create the mxfile structure used by Draw.io
+        drawio_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="{int(time.time())}" agent="Draw.io API Client" version="21.1.2" type="device">
+  <diagram id="diagram-id" name="{title}">
+    <mxGraphModel dx="1326" dy="798" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100">
+      {xml_content.strip()}
+    </mxGraphModel>
+  </diagram>
+</mxfile>"""
+        
+        return drawio_content
+    
     def _convert_to_xml(self, diagram: Dict[str, Any]) -> str:
         """Convert a diagram from JSON to XML format compatible with Draw.io."""
-        # Create the mxGraphModel element
-        root = ET.Element("mxGraphModel")
-        root.set("dx", "1326")
-        root.set("dy", "798")
-        root.set("grid", "1")
-        root.set("gridSize", "10")
-        root.set("guides", "1")
-        root.set("tooltips", "1")
-        root.set("connect", "1")
-        root.set("arrows", "1")
-        root.set("fold", "1")
-        root.set("page", "1")
-        root.set("pageScale", "1")
-        root.set("pageWidth", "850")
-        root.set("pageHeight", "1100")
+        # For the drawio format, we'll just create the inner cells part
+        # as the mxGraphModel wrapper will be added by _create_drawio_file
         
         # Create the root cell
-        root_cell = ET.SubElement(root, "root")
+        root = ET.Element("root")
         
         # Create the parent cell (cell 0)
-        cell0 = ET.SubElement(root_cell, "mxCell")
+        cell0 = ET.SubElement(root, "mxCell")
         cell0.set("id", "0")
         
         # Create the layer cell (cell 1)
-        cell1 = ET.SubElement(root_cell, "mxCell")
+        cell1 = ET.SubElement(root, "mxCell")
         cell1.set("id", "1")
         cell1.set("parent", "0")
         
         # Add the cells from the diagram
         for cell in diagram["cells"]:
             if cell["type"] == "node":
-                mx_cell = ET.SubElement(root_cell, "mxCell")
+                mx_cell = ET.SubElement(root, "mxCell")
                 mx_cell.set("id", cell["id"])
                 mx_cell.set("value", cell["label"])
                 mx_cell.set("style", cell["style"])
@@ -177,7 +216,7 @@ class DrawioAPIClient:
                 geometry.set("as", "geometry")
                 
             elif cell["type"] == "edge":
-                mx_cell = ET.SubElement(root_cell, "mxCell")
+                mx_cell = ET.SubElement(root, "mxCell")
                 mx_cell.set("id", cell["id"])
                 if cell.get("label"):
                     mx_cell.set("value", cell["label"])
@@ -191,10 +230,23 @@ class DrawioAPIClient:
                 geometry.set("relative", "1")
                 geometry.set("as", "geometry")
         
-        # Convert to string with XML declaration
+        # Convert to string with XML declaration for standard XML format
         rough_string = ET.tostring(root, encoding="utf-8")
         reparsed = xml.dom.minidom.parseString(rough_string)
-        return reparsed.toprettyxml(indent="  ")
+        
+        # For non-drawio format (just XML), we'll wrap it in mxGraphModel
+        if diagram.get("_format", "") != "drawio":
+            # Wrap in mxGraphModel for standard XML output
+            full_xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+            full_xml += '<mxGraphModel dx="1326" dy="798" grid="1" gridSize="10" guides="1" '
+            full_xml += 'tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" '
+            full_xml += 'pageWidth="850" pageHeight="1100">\n'
+            full_xml += reparsed.toprettyxml(indent="  ").replace('<?xml version="1.0" ?>\n', '')
+            full_xml += '</mxGraphModel>'
+            return full_xml
+        
+        # For drawio format, just return the inner XML
+        return reparsed.toprettyxml(indent="  ").replace('<?xml version="1.0" ?>\n', '')
     
     def export_to_image(self, diagram: Dict[str, Any], 
                       output_path: str, 
@@ -215,14 +267,71 @@ class DrawioAPIClient:
         Returns:
             Path to the saved image file
         """
-        # First convert the diagram to XML
-        xml_data = self._convert_to_xml(diagram)
-        
         # For SVG format, we'll use our own implementation
         if format.lower() == 'svg':
             return self._create_svg_from_diagram(diagram, output_path)
             
-        # For all other formats, we'll use a trick with a data URL and embedded XML
+        # For PNG, JPG and PDF formats, we'll use CairoSVG if available
+        if format.lower() in ['png', 'jpg', 'jpeg', 'pdf'] and CAIROSVG_AVAILABLE:
+            # First create an SVG file
+            with tempfile.NamedTemporaryFile(suffix='.svg', delete=False) as temp_svg:
+                svg_path = temp_svg.name
+            
+            # Generate SVG file
+            self._create_svg_from_diagram(diagram, svg_path)
+            
+            # Convert to the target format using CairoSVG
+            try:
+                if format.lower() == 'png':
+                    # Handle transparency
+                    if transparent:
+                        cairosvg.svg2png(url=svg_path, write_to=output_path, 
+                                        scale=scale, background_color="transparent")
+                    else:
+                        background_color = bg if bg else "#ffffff"
+                        cairosvg.svg2png(url=svg_path, write_to=output_path, 
+                                        scale=scale, background_color=background_color)
+                elif format.lower() in ['jpg', 'jpeg']:
+                    # JPEG doesn't support transparency
+                    background_color = bg if bg else "#ffffff"
+                    cairosvg.svg2png(url=svg_path, write_to=output_path + ".png", 
+                                    scale=scale, background_color=background_color)
+                    
+                    # Convert PNG to JPEG using Pillow
+                    if PILLOW_AVAILABLE:
+                        with Image.open(output_path + ".png") as img:
+                            # Save as JPEG with white background
+                            rgb_img = img.convert('RGB')
+                            rgb_img.save(output_path, quality=95)
+                        # Remove temporary PNG
+                        os.remove(output_path + ".png")
+                    else:
+                        # If Pillow is not available, just keep the PNG
+                        os.rename(output_path + ".png", output_path)
+                        print("Warning: Pillow not available. Saved as PNG instead of JPEG.")
+                        
+                elif format.lower() == 'pdf':
+                    cairosvg.svg2pdf(url=svg_path, write_to=output_path, scale=scale)
+                
+                # Clean up temporary SVG file
+                os.remove(svg_path)
+                
+                print(f"Successfully exported diagram to {os.path.basename(output_path)}")
+                return os.path.abspath(output_path)
+                
+            except Exception as e:
+                print(f"Error converting SVG to {format.upper()}: {str(e)}")
+                print("Falling back to HTML export helper method...")
+                # If conversion fails, fall back to the original method
+                os.remove(svg_path)
+        
+        # If we get here, either:
+        # 1. The format is not supported for direct conversion
+        # 2. CairoSVG is not available
+        # 3. The conversion failed
+        
+        # First convert the diagram to XML
+        xml_data = self._convert_to_xml(diagram)
         bounds = self.calculate_diagram_size(diagram)
         encoded_xml = urllib.parse.quote(xml_data)
         
@@ -266,10 +375,17 @@ class DrawioAPIClient:
         with open(html_path, 'w', encoding='utf-8') as f:
             f.write(html_content)
         
+        library_advice = ""
+        if not CAIROSVG_AVAILABLE:
+            library_advice = f"""
+NOTE: For automatic {format.upper()} generation, install CairoSVG and Pillow:
+    pip install cairosvg Pillow
+"""
+        
         # Save a dummy image file
         dummy_image_content = f"""
-This is a dummy {format.upper()} file. The API to automatically generate {format.upper()} files requires a web browser.
-
+This is a dummy {format.upper()} file. The API to automatically generate {format.upper()} files requires additional libraries or a web browser.
+{library_advice}
 INSTRUCTIONS:
 1. Open the accompanying HTML file ({os.path.basename(html_path)}) in a web browser
 2. Right-click on the diagram and select "Save image as..."

@@ -144,12 +144,37 @@ def main():
     
     print(f"✓ Created HTML viewer: flowchart_viewer.html")
     
-    # Create helper HTML files for other formats
-    print("\nCreating HTML helper files for other formats:")
+    # Export to different image formats
+    print("\nExporting to different image formats:")
     
-    # PNG format helper
+    # PNG format 
     image_path = client.export_to_image(diagram, "flowchart.png", format="png")
-    print("✓ Created PNG helper files")
+    
+    # JPEG format
+    image_path = client.export_to_image(diagram, "flowchart.jpg", format="jpg")
+    
+    # PNG with transparent background
+    image_path = client.export_to_image(
+        diagram, 
+        "flowchart_transparent.png", 
+        format="png",
+        transparent=True
+    )
+    
+    # PNG with scaled size (larger)
+    image_path = client.export_to_image(
+        diagram, 
+        "flowchart_large.png", 
+        format="png",
+        scale=2.0
+    )
+    
+    # PDF export
+    image_path = client.export_to_image(
+        diagram, 
+        "flowchart.pdf", 
+        format="pdf"
+    )
     
     # Try SVG with some custom styling
     image_path = client.export_to_image(
@@ -161,9 +186,14 @@ def main():
     
     print("\nUsage Instructions:")
     print("1. Open flowchart_viewer.html to view the SVG diagram")
-    print("2. SVG files can also be opened directly in any browser")
-    print("3. For PNG/JPG, open the .html file in a browser and use save-as")
-    print("   Example: open flowchart.png.html in your browser")
+    print("2. The following files have been generated:")
+    print("   - flowchart.svg - Standard SVG format")
+    print("   - flowchart.png - Standard PNG format")
+    print("   - flowchart.jpg - JPEG format")
+    print("   - flowchart_transparent.png - PNG with transparent background")
+    print("   - flowchart_large.png - PNG with 2x scaling")
+    print("   - flowchart.pdf - PDF format")
+    print("   - flowchart_custom.svg - Custom styled SVG")
 
 
 if __name__ == "__main__":
