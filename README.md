@@ -7,8 +7,9 @@ A practical hands-on project for working with the Draw.io API to programmaticall
 This project demonstrates how to use the Draw.io API to:
 - Create diagrams programmatically
 - Modify existing diagrams
-- Export diagrams to various formats
-- Import diagrams from other sources
+- Export diagrams to JSON and XML formats
+- Export diagrams to image formats (PNG, JPG, SVG, PDF)
+- Customize image exports (transparent background, scaling, custom colors)
 
 ## Installation
 
@@ -30,7 +31,15 @@ pip install -r requirements.txt
 Check the `examples` directory for various usage examples:
 
 ```bash
+# Export diagram to JSON format
 python examples/create_simple_diagram.py
+
+# Export diagram to various image formats (PNG, JPG, SVG, PDF)
+python examples/export_to_image.py
+
+# Use the main.py with arguments
+python examples/main.py json   # Run the JSON export example
+python examples/main.py image  # Run the image export example
 ```
 
 ## Project Structure
