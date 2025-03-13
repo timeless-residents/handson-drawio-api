@@ -369,19 +369,19 @@ Use the SVG format instead, which can be generated directly:
                     ellipse_rx = w / 2
                     ellipse_ry = cylinder_height / 2
                     
-                    # Use a group element to ensure proper ordering
+                    # Use SVG ordering for proper z-index (items drawn later appear on top)
                     svg_content += f'<g class="database-cylinder">\n'
                     
-                    # Rectangle body of cylinder (first, so it's behind)
-                    svg_content += f'  <rect x="{x}" y="{y + ellipse_ry}" width="{w}" height="{h - ellipse_ry}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
+                    # 1. Start with the rectangle body
+                    svg_content += f'  <rect x="{x}" y="{y + ellipse_ry}" width="{w}" height="{h - 2*ellipse_ry}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
                     
-                    # Bottom ellipse of cylinder (visible part)
-                    svg_content += f'  <path d="M {x} {y + h - ellipse_ry} A {ellipse_rx} {ellipse_ry} 0 0 0 {x + w} {y + h - ellipse_ry}" fill="none" stroke="{stroke_color}" stroke-width="1"/>\n'
+                    # 2. Add the bottom ellipse (full ellipse, not just the arc)
+                    svg_content += f'  <ellipse cx="{x + ellipse_rx}" cy="{y + h - ellipse_ry}" rx="{ellipse_rx}" ry="{ellipse_ry}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
                     
-                    # Bottom ellipse fill (to make it look 3D)
-                    svg_content += f'  <ellipse cx="{x + ellipse_rx}" cy="{y + h - ellipse_ry}" rx="{ellipse_rx}" ry="{ellipse_ry}" fill="{fill_color}" stroke="none" opacity="0.6"/>\n'
+                    # 3. Draw the top part of the bottom ellipse - white fill to hide the part that should be hidden by the cylinder
+                    svg_content += f'  <path d="M {x} {y + h - ellipse_ry} L {x + w} {y + h - ellipse_ry}" stroke="{stroke_color}" stroke-width="1"/>\n'
                     
-                    # Top ellipse of cylinder (last, so it's in front)
+                    # 4. Finally draw the top ellipse, which appears on top of everything
                     svg_content += f'  <ellipse cx="{x + ellipse_rx}" cy="{y + ellipse_ry}" rx="{ellipse_rx}" ry="{ellipse_ry}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
                     
                     # Close the group
