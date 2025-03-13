@@ -3,6 +3,9 @@
 import json
 import base64
 import requests
+import urllib.parse
+import xml.etree.ElementTree as ET
+import xml.dom.minidom
 from typing import Dict, Any, Optional, List, Union
 
 
@@ -113,11 +116,107 @@ class DrawioAPIClient:
         
         Args:
             diagram: The diagram to export
-            format: The export format (xml, png, jpg, svg, pdf)
+            format: The export format (json, xml)
             
         Returns:
             The exported diagram data
         """
-        # This is a simplified placeholder implementation
-        # In a real implementation, this would convert to the requested format
-        return json.dumps(diagram)
+        if format.lower() == "json":
+            return json.dumps(diagram)
+        elif format.lower() == "xml":
+            return self._convert_to_xml(diagram)
+        else:
+            raise ValueError(f"Unsupported format: {format}")
+            
+    def _convert_to_xml(self, diagram: Dict[str, Any]) -> str:
+        """Convert a diagram from JSON to XML format compatible with Draw.io.
+        
+        Args:
+            diagram: The diagram in JSON format
+            
+        Returns:
+            The diagram in XML format
+        """
+        # Create the mxGraphModel element
+        root = ET.Element("mxGraphModel")
+        root.set("dx", "1326")
+        root.set("dy", "798")
+        root.set("grid", "1")
+        root.set("gridSize", "10")
+        root.set("guides", "1")
+        root.set("tooltips", "1")
+        root.set("connect", "1")
+        root.set("arrows", "1")
+        root.set("fold", "1")
+        root.set("page", "1")
+        root.set("pageScale", "1")
+        root.set("pageWidth", "850")
+        root.set("pageHeight", "1100")
+        
+        # Create the root cell
+        root_cell = ET.SubElement(root, "root")
+        
+        # Create the parent cell (cell 0)
+        cell0 = ET.SubElement(root_cell, "mxCell")
+        cell0.set("id", "0")
+        
+        # Create the layer cell (cell 1)
+        cell1 = ET.SubElement(root_cell, "mxCell")
+        cell1.set("id", "1")
+        cell1.set("parent", "0")
+        
+        # Add the cells from the diagram
+        for cell in diagram["cells"]:
+            if cell["type"] == "node":
+                mx_cell = ET.SubElement(root_cell, "mxCell")
+                mx_cell.set("id", cell["id"])
+                mx_cell.set("value", cell["label"])
+                mx_cell.set("style", cell["style"])
+                mx_cell.set("parent", "1")
+                mx_cell.set("vertex", "1")
+                
+                geometry = ET.SubElement(mx_cell, "mxGeometry")
+                geometry.set("x", str(cell["x"]))
+                geometry.set("y", str(cell["y"]))
+                geometry.set("width", str(cell["width"]))
+                geometry.set("height", str(cell["height"]))
+                geometry.set("as", "geometry")
+                
+            elif cell["type"] == "edge":
+                mx_cell = ET.SubElement(root_cell, "mxCell")
+                mx_cell.set("id", cell["id"])
+                if cell.get("label"):
+                    mx_cell.set("value", cell["label"])
+                mx_cell.set("style", cell["style"])
+                mx_cell.set("parent", "1")
+                mx_cell.set("source", cell["source"])
+                mx_cell.set("target", cell["target"])
+                mx_cell.set("edge", "1")
+                
+                geometry = ET.SubElement(mx_cell, "mxGeometry")
+                geometry.set("relative", "1")
+                geometry.set("as", "geometry")
+        
+        # Convert to string and pretty-print
+        rough_string = ET.tostring(root, encoding='utf-8')
+        reparsed = xml.dom.minidom.parseString(rough_string)
+        return reparsed.toprettyxml(indent="  ")
+    
+    def get_preview_url(self, xml_data: str, title: str = "Diagram") -> str:
+        """Generate a URL to preview the diagram in Draw.io.
+        
+        Args:
+            xml_data: The diagram data in XML format
+            title: The title of the diagram
+            
+        Returns:
+            A URL that can be used to view the diagram in Draw.io
+        """
+        # Encode the XML data
+        encoded_data = base64.b64encode(xml_data.encode('utf-8')).decode('utf-8')
+        url_encoded = urllib.parse.quote(encoded_data)
+        
+        # Construct the URL
+        preview_url = f"{self.base_url}?lightbox=1&edit=_blank&layers=1&nav=1&title={urllib.parse.quote(title)}&xml={url_encoded}"
+        
+        return preview_url
