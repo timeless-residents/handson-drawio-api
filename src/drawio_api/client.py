@@ -304,15 +304,12 @@ Use the SVG format instead, which can be generated directly:
         width = max_x - min_x
         height = max_y - min_y
         
-        # Start SVG file with the right size and arrow marker definition
-        svg_content = f"""<?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
-  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+        # Start SVG file with the right size and arrow marker definition - simplified modern format
+        svg_content = f"""<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" 
      xmlns:xlink="http://www.w3.org/1999/xlink"
      width="{width}" height="{height}" 
-     viewBox="{min_x} {min_y} {width} {height}"
-     version="1.1">
+     viewBox="{min_x} {min_y} {width} {height}">
      
     <defs>
         <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
