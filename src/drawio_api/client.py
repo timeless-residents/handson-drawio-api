@@ -353,6 +353,9 @@ Use the SVG format instead, which can be generated directly:
                     shape_type = "ellipse"
                     cx, cy = x + w/2, y + h/2
                     rx, ry = w/2, h/2
+                elif "cylinder" in style:
+                    shape_type = "cylinder"
+                    cylinder_height = 15  # Height of the cylinder top part
                     
                 # Create the shape element
                 if shape_type == "rect":
@@ -361,6 +364,19 @@ Use the SVG format instead, which can be generated directly:
                     svg_content += f'<ellipse cx="{cx}" cy="{cy}" rx="{rx}" ry="{ry}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
                 elif shape_type == "polygon":
                     svg_content += f'<polygon points="{points}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
+                elif shape_type == "cylinder":
+                    # Draw the cylinder (database) shape
+                    ellipse_rx = w / 2
+                    ellipse_ry = cylinder_height / 2
+                    
+                    # Top ellipse of cylinder
+                    svg_content += f'<ellipse cx="{x + ellipse_rx}" cy="{y + ellipse_ry}" rx="{ellipse_rx}" ry="{ellipse_ry}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
+                    
+                    # Rectangle body of cylinder
+                    svg_content += f'<rect x="{x}" y="{y + ellipse_ry}" width="{w}" height="{h - ellipse_ry}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
+                    
+                    # Bottom ellipse of cylinder (visible part)
+                    svg_content += f'<path d="M {x} {y + h - ellipse_ry} A {ellipse_rx} {ellipse_ry} 0 0 0 {x + w} {y + h - ellipse_ry}" fill="none" stroke="{stroke_color}" stroke-width="1"/>\n'
                 
                 # Add text label
                 if "\n" in label:
