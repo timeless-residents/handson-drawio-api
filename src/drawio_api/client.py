@@ -305,8 +305,9 @@ Use the SVG format instead, which can be generated directly:
         height = max_y - min_y
         
         # Start SVG file with the right size and arrow marker definition
-        svg_content = f"""<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+        svg_content = f"""<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg xmlns="http://www.w3.org/2000/svg" 
      xmlns:xlink="http://www.w3.org/1999/xlink"
      width="{width}" height="{height}" 
@@ -319,8 +320,8 @@ Use the SVG format instead, which can be generated directly:
         </marker>
     </defs>
     
-    <!-- Optional white background -->
-    <rect x="{min_x}" y="{min_y}" width="{width}" height="{height}" fill="white" opacity="0.01"/>
+    <!-- White background -->
+    <rect x="{min_x}" y="{min_y}" width="{width}" height="{height}" fill="white"/>
 """
         
         # For each node in the diagram, create an SVG element
@@ -410,9 +411,7 @@ Use the SVG format instead, which can be generated directly:
                         path = f"M {source_x} {source_y} L {source_x} {mid_y} L {target_x} {mid_y} L {target_x} {target_y}"
                         
                         # Determine arrow style
-                        arrow_end = "none"
-                        if "endArrow=classic" in cell.get("style", ""):
-                            arrow_end = "url(#arrow)"
+                        arrow_end = "url(#arrow)"  # Always use arrow by default
                         
                         stroke_color = "#000000"  # Default black
                         style_props = dict(prop.split("=") for prop in cell.get("style", "").split(";") if "=" in prop)
@@ -436,7 +435,7 @@ Use the SVG format instead, which can be generated directly:
                             svg_content += f'<text x="{label_x}" y="{label_y}" text-anchor="middle" font-family="Arial" font-size="12" fill="{text_color}">{cell["label"]}</text>\n'
                             
                     else:
-                        # Draw a straight line
+                        # Draw a straight line with an arrow
                         svg_content += f'<line x1="{source_x}" y1="{source_y}" x2="{target_x}" y2="{target_y}" stroke="black" stroke-width="1" marker-end="url(#arrow)"/>\n'
                         
                         # Add label if present
