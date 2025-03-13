@@ -355,7 +355,7 @@ Use the SVG format instead, which can be generated directly:
                     rx, ry = w/2, h/2
                 elif "cylinder" in style:
                     shape_type = "cylinder"
-                    cylinder_height = 15  # Height of the cylinder top part
+                    cylinder_height = min(h * 0.3, 20)  # Height of the cylinder top part (proportional to height)
                     
                 # Create the shape element
                 if shape_type == "rect":
@@ -365,21 +365,27 @@ Use the SVG format instead, which can be generated directly:
                 elif shape_type == "polygon":
                     svg_content += f'<polygon points="{points}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
                 elif shape_type == "cylinder":
-                    # Draw the cylinder (database) shape
+                    # Draw the cylinder (database) shape using a group for better organization
                     ellipse_rx = w / 2
                     ellipse_ry = cylinder_height / 2
                     
-                    # Top ellipse of cylinder
-                    svg_content += f'<ellipse cx="{x + ellipse_rx}" cy="{y + ellipse_ry}" rx="{ellipse_rx}" ry="{ellipse_ry}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
+                    # Use a group element to ensure proper ordering
+                    svg_content += f'<g class="database-cylinder">\n'
                     
-                    # Rectangle body of cylinder
-                    svg_content += f'<rect x="{x}" y="{y + ellipse_ry}" width="{w}" height="{h - ellipse_ry}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
+                    # Rectangle body of cylinder (first, so it's behind)
+                    svg_content += f'  <rect x="{x}" y="{y + ellipse_ry}" width="{w}" height="{h - ellipse_ry}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
                     
                     # Bottom ellipse of cylinder (visible part)
-                    svg_content += f'<path d="M {x} {y + h - ellipse_ry} A {ellipse_rx} {ellipse_ry} 0 0 0 {x + w} {y + h - ellipse_ry}" fill="none" stroke="{stroke_color}" stroke-width="1"/>\n'
+                    svg_content += f'  <path d="M {x} {y + h - ellipse_ry} A {ellipse_rx} {ellipse_ry} 0 0 0 {x + w} {y + h - ellipse_ry}" fill="none" stroke="{stroke_color}" stroke-width="1"/>\n'
                     
-                    # Add a full ellipse with clipping if needed
-                    # svg_content += f'<ellipse cx="{x + ellipse_rx}" cy="{y + h - ellipse_ry}" rx="{ellipse_rx}" ry="{ellipse_ry}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1" opacity="0.5"/>\n'
+                    # Bottom ellipse fill (to make it look 3D)
+                    svg_content += f'  <ellipse cx="{x + ellipse_rx}" cy="{y + h - ellipse_ry}" rx="{ellipse_rx}" ry="{ellipse_ry}" fill="{fill_color}" stroke="none" opacity="0.6"/>\n'
+                    
+                    # Top ellipse of cylinder (last, so it's in front)
+                    svg_content += f'  <ellipse cx="{x + ellipse_rx}" cy="{y + ellipse_ry}" rx="{ellipse_rx}" ry="{ellipse_ry}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1"/>\n'
+                    
+                    # Close the group
+                    svg_content += f'</g>\n'
                 
                 # Add text label
                 if "\n" in label:
