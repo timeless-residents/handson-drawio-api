@@ -48,15 +48,15 @@ def main():
         "rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;"
     )
     
-    # Add Database/Data Store
+    # Add Database/Data Store (cylinder shape)
     diagram = client.add_node(
         diagram, 
         "Database", 
-        400, 
+        480, 
         320, 
-        120, 
-        60,
-        "shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;"
+        60, 
+        80,
+        "shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;"
     )
     
     # Add decision node
@@ -95,7 +95,7 @@ def main():
     diagram = client.add_node(
         diagram, 
         "Return Error", 
-        40, 
+        50, 
         430, 
         120, 
         60,
@@ -146,13 +146,13 @@ def main():
         style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;"
     )
     
-    # Connection to database
+    # Connection to database - optimized for better layout
     diagram = client.add_edge(
         diagram, 
         validate_input_id, 
         database_id,
         "Query",
-        "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0.5;entryY=0;dashed=1;"
+        "edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;dashed=1;strokeColor=#666666;strokeWidth=1;"
     )
     
     diagram = client.add_edge(
@@ -160,7 +160,7 @@ def main():
         database_id, 
         process_request_id,
         "Result",
-        "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=1;entryY=0.5;dashed=1;"
+        "edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.75;entryX=1;entryY=0.25;dashed=1;strokeColor=#666666;strokeWidth=1;"
     )
     
     # Valid path
@@ -172,13 +172,13 @@ def main():
         "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=center;verticalAlign=middle;fontStyle=1;fontColor=#009900;"
     )
     
-    # Invalid path
+    # Invalid path - improved layout
     diagram = client.add_edge(
         diagram, 
         is_valid_id, 
         return_error_id, 
         "No",
-        "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=center;verticalAlign=middle;fontStyle=1;fontColor=#990000;exitX=0;exitY=0.5;"
+        "edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;align=center;verticalAlign=middle;fontStyle=1;fontColor=#990000;exitX=0;exitY=0.5;entryX=1;entryY=0.5;"
     )
     
     # Continue the flow
@@ -189,12 +189,12 @@ def main():
         style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;"
     )
     
-    # End paths
+    # End paths - improved layout
     diagram = client.add_edge(
         diagram, 
         return_error_id, 
         end_id,
-        style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0;entryY=0.5;"
+        style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0;entryY=0.5;curved=1;"
     )
     
     diagram = client.add_edge(
