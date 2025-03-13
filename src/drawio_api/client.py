@@ -377,6 +377,9 @@ Use the SVG format instead, which can be generated directly:
                     
                     # Bottom ellipse of cylinder (visible part)
                     svg_content += f'<path d="M {x} {y + h - ellipse_ry} A {ellipse_rx} {ellipse_ry} 0 0 0 {x + w} {y + h - ellipse_ry}" fill="none" stroke="{stroke_color}" stroke-width="1"/>\n'
+                    
+                    # Add a full ellipse with clipping if needed
+                    # svg_content += f'<ellipse cx="{x + ellipse_rx}" cy="{y + h - ellipse_ry}" rx="{ellipse_rx}" ry="{ellipse_ry}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="1" opacity="0.5"/>\n'
                 
                 # Add text label
                 if "\n" in label:
