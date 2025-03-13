@@ -304,7 +304,7 @@ Use the SVG format instead, which can be generated directly:
         width = max_x - min_x
         height = max_y - min_y
         
-        # Start SVG file with the right size
+        # Start SVG file with the right size and arrow marker definition
         svg_content = f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg xmlns="http://www.w3.org/2000/svg" 
@@ -312,10 +312,16 @@ Use the SVG format instead, which can be generated directly:
      width="{width}" height="{height}" 
      viewBox="{min_x} {min_y} {width} {height}"
      version="1.1">
+     
+    <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#000"/>
+        </marker>
+    </defs>
+    
+    <!-- Optional white background -->
+    <rect x="{min_x}" y="{min_y}" width="{width}" height="{height}" fill="white" opacity="0.01"/>
 """
-        
-        # Add a background rectangle (optional)
-        # svg_content += f'<rect x="{min_x}" y="{min_y}" width="{width}" height="{height}" fill="white"/>\n'
         
         # For each node in the diagram, create an SVG element
         for cell in diagram["cells"]:
@@ -439,22 +445,6 @@ Use the SVG format instead, which can be generated directly:
                             label_x = (source_x + target_x) / 2
                             label_y = (source_y + target_y) / 2 - 10
                             svg_content += f'<text x="{label_x}" y="{label_y}" text-anchor="middle" font-family="Arial" font-size="12">{cell["label"]}</text>\n'
-        
-        # Add arrow marker definition
-        svg_content = """<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" 
-     xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="{0}" height="{1}" 
-     viewBox="{2} {3} {0} {1}"
-     version="1.1">
-     
-    <defs>
-        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
-            <path d="M0,0 L0,6 L9,3 z" fill="#000"/>
-        </marker>
-    </defs>
-""".format(width, height, min_x, min_y) + svg_content
         
         # Close the SVG
         svg_content += "</svg>"
