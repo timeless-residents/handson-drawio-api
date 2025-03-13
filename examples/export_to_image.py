@@ -103,39 +103,46 @@ def main():
     bounds = client.calculate_diagram_size(diagram)
     print(f"Diagram bounds: {bounds}")
     
-    # Export to different image formats
-    formats = ['png', 'jpg', 'svg', 'pdf']
-    for fmt in formats:
-        output_path = f"flowchart.{fmt}"
-        image_path = client.export_to_image(diagram, output_path, format=fmt)
-        print(f"Exported diagram to {output_path}")
+    # Export to SVG format (most reliable)
+    output_path = "flowchart.svg"
+    image_path = client.export_to_image(diagram, output_path, format="svg")
+    print(f"Exported diagram to {output_path}")
     
-    # Export with transparent background
-    image_path = client.export_to_image(
-        diagram, 
-        "flowchart_transparent.png", 
-        format="png", 
-        transparent=True
-    )
-    print(f"Exported diagram with transparent background to flowchart_transparent.png")
-    
-    # Export with custom scale
-    image_path = client.export_to_image(
-        diagram, 
-        "flowchart_large.png", 
-        format="png", 
-        scale=2.0
-    )
-    print(f"Exported diagram with 2x scale to flowchart_large.png")
-    
-    # Export with custom background color
-    image_path = client.export_to_image(
-        diagram, 
-        "flowchart_yellow_bg.png", 
-        format="png", 
-        bg="#FFFFCC"
-    )
-    print(f"Exported diagram with custom background to flowchart_yellow_bg.png")
+    # Try other formats (note: these may fail if the API is unavailable)
+    print("\nAttempting to export to other formats (these may fail if the API is unavailable):")
+    try:
+        # Export to PNG
+        image_path = client.export_to_image(diagram, "flowchart.png", format="png")
+        print("✓ Successfully exported diagram to flowchart.png")
+        
+        # Export with transparent background
+        image_path = client.export_to_image(
+            diagram, 
+            "flowchart_transparent.png", 
+            format="png", 
+            transparent=True
+        )
+        print("✓ Successfully exported diagram with transparent background")
+        
+        # Export with custom scale
+        image_path = client.export_to_image(
+            diagram, 
+            "flowchart_large.png", 
+            format="png", 
+            scale=2.0
+        )
+        print("✓ Successfully exported diagram with 2x scale")
+        
+        # Export with custom background color
+        image_path = client.export_to_image(
+            diagram, 
+            "flowchart_yellow_bg.png", 
+            format="png", 
+            bg="#FFFFCC"
+        )
+        print("✓ Successfully exported diagram with custom background")
+    except Exception as e:
+        print(f"Note: Some export formats failed - SVG should still work. Error: {str(e)}")
 
 
 if __name__ == "__main__":
