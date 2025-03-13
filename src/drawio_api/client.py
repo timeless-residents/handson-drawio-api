@@ -241,8 +241,9 @@ class DrawioAPIClient:
         # Create a self-contained HTML file with the XML data embedded
         encoded_data = base64.b64encode(xml_data.encode('utf-8')).decode('utf-8')
         
+        # Create a simplified but reliable HTML viewer that directly embeds the diagram using an iframe
         html = f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -282,13 +283,6 @@ class DrawioAPIClient:
             background-color: #e8f4f8;
             border-radius: 4px;
         }}
-        #diagram-container {{
-            width: 100%;
-            height: 600px;
-            border: 1px solid #ddd;
-            overflow: auto;
-            margin-top: 20px;
-        }}
         pre {{
             white-space: pre-wrap;
             word-wrap: break-word;
@@ -324,62 +318,46 @@ class DrawioAPIClient:
         <h1>{title}</h1>
         
         <div class="button-container">
-            <button onclick="openInDrawIo()">Open in Draw.io</button>
-            <button onclick="toggleXmlView()">Toggle XML View</button>
+            <button id="openDrawioBtn">Draw.ioで開く</button>
+            <button id="toggleXmlBtn">XMLを表示/非表示</button>
         </div>
         
-        <div id="diagram-container">
-            <iframe id="diagram-iframe" src="{self.base_url}?embed=1&ui=atlas&spin=1&proto=json&hideScrollbars=1" frameborder="0" allowfullscreen></iframe>
+        <!-- draw.io ダイアグラムを表示するiframe -->
+        <div class="iframe-container">
+            <!-- Draw.io Viewer を直接埋め込む -->
+            <iframe id="diagramFrame" src="{self.base_url}?embed=1&ui=atlas&spin=1&proto=json&hideScrollbars=1&xml={urllib.parse.quote(encoded_data)}" frameborder="0" allowfullscreen></iframe>
         </div>
         
-        <pre id="xml-view">{xml_data}</pre>
+        <pre id="xmlView">{xml_data}</pre>
         
         <div class="info">
             <h3>使い方</h3>
             <p>このダイアグラムは Draw.io API を使用してプログラムで作成されています。</p>
-            <p>「Open in Draw.io」ボタンをクリックすると、Draw.io で直接開いて編集できます。</p>
-            <p>「Toggle XML View」ボタンをクリックすると、XML データを表示/非表示できます。</p>
+            <p>「Draw.ioで開く」ボタンをクリックすると、Draw.io で直接開いて編集できます。</p>
+            <p>「XMLを表示/非表示」ボタンをクリックすると、XML データを表示/非表示できます。</p>
         </div>
     </div>
     
     <script>
-        // ダイアグラムデータ (Base64エンコード)
-        const diagramData = "{encoded_data}";
+        // 要素の取得
+        const openDrawioBtn = document.getElementById('openDrawioBtn');
+        const toggleXmlBtn = document.getElementById('toggleXmlBtn');
+        const xmlView = document.getElementById('xmlView');
         
         // Draw.ioでダイアグラムを開く
-        function openInDrawIo() {{
-            const url = '{self.base_url}?lightbox=1&edit=_blank&layers=1&nav=1&title={urllib.parse.quote(title)}&xml=' + encodeURIComponent(diagramData);
+        openDrawioBtn.addEventListener('click', function() {{
+            const url = '{self.base_url}?lightbox=1&edit=_blank&layers=1&nav=1&title={urllib.parse.quote(title)}&xml={urllib.parse.quote(encoded_data)}';
             window.open(url, '_blank');
-        }}
+        }});
         
-        // XMLビューの表示/非表示を切り替える
-        function toggleXmlView() {{
-            const xmlView = document.getElementById('xml-view');
-            xmlView.style.display = xmlView.style.display === 'none' ? 'block' : 'none';
-        }}
-        
-        // ページ読み込み時にダイアグラムを設定
-        window.onload = function() {{
-            // iframe内のDrawioクライアントがロードされたらダイアグラムを設定
-            const iframe = document.getElementById('diagram-iframe');
-            iframe.addEventListener('load', function() {{
-                // 少し待ってからダイアグラムデータを送信（Draw.ioの初期化を待つ）
-                setTimeout(function() {{
-                    try {{
-                        // Base64デコードしてXMLを取得
-                        const xmlData = atob(diagramData);
-                        
-                        // iframeにメッセージを送信
-                        iframe.contentWindow.postMessage(JSON.stringify({{
-                            action: 'load',
-                            xml: xmlData
-                        }}), '*');
-                    }} catch (error) {{
-                        console.error('Failed to load diagram:', error);
-                    }}
-                }}, 1000);
-            }});
-        }};
+        // XMLの表示/非表示を切り替える
+        toggleXmlBtn.addEventListener('click', function() {{
+            if (xmlView.style.display === 'none' || xmlView.style.display === '') {{
+                xmlView.style.display = 'block';
+            }} else {{
+                xmlView.style.display = 'none';
+            }}
+        }});
     </script>
 </body>
 </html>
