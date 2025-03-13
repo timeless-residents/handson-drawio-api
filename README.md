@@ -31,15 +31,19 @@ pip install -r requirements.txt
 Check the `examples` directory for various usage examples:
 
 ```bash
-# Export diagram to JSON format
+# Create a simple flowchart and export to JSON
 python examples/create_simple_diagram.py
+
+# Create a flowchart with a data store component
+python examples/create_datastore_diagram.py
 
 # Export diagram to various image formats (PNG, JPG, SVG, PDF)
 python examples/export_to_image.py
 
 # Use the main.py with arguments
-python examples/main.py json   # Run the JSON export example
-python examples/main.py image  # Run the image export example
+python examples/main.py simple     # Run the simple flowchart example
+python examples/main.py datastore  # Run the data store diagram example
+python examples/main.py image      # Run the image export example
 ```
 
 ## Project Structure
